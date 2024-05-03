@@ -618,7 +618,6 @@ save(Dcli, Dlu, Dres, Dgeo, cluc, niche, geospace, centroid.pc, centroid.geo,
 #############################################################################
 
 # Niche drivers (species traits and other attributes)
-setwd("/Users/viana/Dropbox/TFM_birds_BBS/Data")
 load("Temporal_trends.RData")
 
 niche.drivers <- dplyr::left_join(sp.traits,niche,by="aou")
@@ -665,7 +664,6 @@ summary(megc)
 
 # Environmental change is not related to geographical change
 cor.test(niche.drivers$b.Dgeo,niche.drivers$b.ec)
-
 
 
 table1 <- niche.drivers[,c("Species1","b.D","b.nb","b.dist","dist")]
