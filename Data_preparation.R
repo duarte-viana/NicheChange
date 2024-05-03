@@ -29,7 +29,6 @@ routes <- readOGR("route_buffers", "route_buffers")
 proj4string(routes)
 routes <- st_as_sf(routes)
 
-setwd("/Users/viana/Dropbox/TFM_birds_BBS/Data/Elevation_rasters")
 (cos(40 * pi/180) * 2 * pi * 6378137) / (256 * 2^10) # resolution for z=10 (~110 m)
 elev <- data.frame(site_id=as.integer(routes$RTENO), elev.mean=NA, elev.max=NA)
 for(i in 1:nrow(routes)){
