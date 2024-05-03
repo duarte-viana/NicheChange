@@ -17,9 +17,6 @@ library(tidyverse)
 #############################################################################################
 
 # Prepare BBS data
-path <- "~/Dropbox (Personal)/Paper_sCom_birds/Data/2020Release_Nor"
-setwd(path)
-knitr::opts_knit$set(root.dir = path)
 
 # Unzip the data
 unzipBBS(path)
@@ -71,10 +68,7 @@ bbs$year <- as.integer(bbs$year)
 bbs$Latitude <- as.numeric(bbs$Latitude)
 bbs$Longitude <- as.numeric(bbs$Longitude)
 
-setwd("~/Dropbox (Personal)/Paper_sCom_birds/Data")
 save(bbs, file="BBS_data.RData")
-load("BBS_data.RData")
-
 
 #----------------------------------------------------
 
@@ -144,7 +138,6 @@ for(i in unique(dup.routes)){
 routes <- routes[!(routes$SEQNO %in% routes.out),]
 
 # Export as shapefile
-setwd("~/Dropbox (Personal)/Paper_sCom_birds/Data/BBS_routes")
 writeOGR(routes, ".", layer='BBS_routes', driver="ESRI Shapefile") 
 
 setwd("~/Dropbox (Personal)/Paper_sCom_birds/Data")
@@ -171,7 +164,6 @@ list.df <- lapply(seq_along(buff), function(i){buff[i][[1]]})
 buff.sp <- do.call("rbind", c(args = list.df, makeUniqueIDs = TRUE))
 buff.sp <- SpatialPolygonsDataFrame(buff.sp, buff.dt[,c("RTENO","SEQNO","SRTENAME")], match.ID = TRUE)
 # Export as shapefile
-setwd("~/Dropbox (Personal)/Paper_sCom_birds/Data/route_buffers")
 writeOGR(buff.sp, ".", layer='route_buffers', driver="ESRI Shapefile") 
 
 
@@ -250,15 +242,12 @@ lc <- read.table("BBS_LC_1980_2019.txt", header=T, sep="\t")
 
 
 # read BBS data
-setwd("~/Dropbox (Personal)/Paper_sCom_birds/Data")
 bbs.clim <- read.table("BBS_BIOCLIM.txt", header=T, sep="\t")
 
 # Merge land cover data
 bbs <- left_join(bbs.clim, lc, by = c('site_id', 'year')) %>% data.frame()
 
-setwd("~/Dropbox (Personal)/Paper_sCom_birds/Data/BBS_data_final")
-write.table(bbs, file="BBS_ALL_DATA.txt", sep="\t", row.names=FALSE)
-
+# Aggregate data
 bbs <- bbs[bbs$year!=2019,]
 t <- seq(1980,2019,3)
 bbs$time <- cut(bbs$year, t, labels=seq(1981,2017,3), include.lowest = T, right=F)
@@ -289,7 +278,7 @@ sp.in <- sp.occ2$aou[sp.occ2$occ>=20]
 # Filter species
 bbs.agg <- bbs.agg[bbs.agg$aou %in% sp.in,]
 
-setwd("~/Dropbox (Personal)/Paper_sCom_birds/Data/BBS_data_final")
+# Save data
 write.table(bbs.agg, file="BBS_AGGREGATTED.txt", sep="\t", row.names=FALSE)
 
 
