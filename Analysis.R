@@ -665,7 +665,6 @@ summary(megc)
 # Environmental change is not related to geographical change
 cor.test(niche.drivers$b.Dgeo,niche.drivers$b.ec)
 
-
 table1 <- niche.drivers[,c("Species1","b.D","b.nb","b.dist","dist")]
 write.table(table1, file="Table_S1.txt", row.names=F, sep="\t")
 
@@ -683,8 +682,6 @@ which(duplicated(spd$Species1)) # one duplicated species
 spd <- spd[spd$Species3!="Dendroica petechia",] # keep the aestiva (North American subspecies)
 all(spd$Species3 %in% birdtree.sp$Scientific)
 
-
-
 # From https://github.com/nicholasjclark/BBS.occurrences/blob/master/Clark_etal_analysis/Appendix_S4_PhyloTraitData.Rmd
 
 #Export the vector as a one-column .csv file 
@@ -695,9 +692,7 @@ all(spd$Species3 %in% birdtree.sp$Scientific)
 # We downloaded 100 trees from the *Ericsson All Species* dataset for our analyses. 
 # Once processed, save the resulting .nex file and read in the multiphylo object 
 # using functions in the `ape` package
-setwd("/Users/viana/Dropbox/TFM_birds_BBS/Data/Phylo_100_BirdTree")
 sp.trees <- ape::read.nexus("output.nex")
-setwd("/Users/viana/Dropbox/TFM_birds_BBS/Data")
 # Now check to make sure that all of the species names are represented in the tree. 
 # Here, we have to include the underscore once again, as this is included in Birdtree.org phylogeny subsets. 
 # This call should return `TRUE` if there are no unmatched names
@@ -823,72 +818,6 @@ m5.brm <- brm(straightness  ~ Hand.Wing.Index + Mass + Habitat.Density +
 print(summary(m5.brm), digits = 3)
 
 
-#------------------------------
-
-# Models for conservation status
-# Cumulative (ordinal) models
-# Conservation as a response variable
-
-
-niche.drivers2$b.D.sc <- scale(niche.drivers2$b.D)
-niche.drivers2$b.nb.sc <- scale(niche.drivers2$b.nb)
-niche.drivers2$b.dist.sc <- scale(niche.drivers2$b.dist)
-
-# Population trend
-# with phylogenetic correlation
-m21.brm <- brm(PT.c  ~ b.D.sc + b.nb.sc + b.dist.sc +
-                 (1|gr(phylo, cov = A)), family= cumulative,
-               data=niche.drivers2, data2 = list(A = A),
-               control = list(adapt_delta = .97), 
-               chains=4, thin=10, iter=5000, warmup=1000, cores=4)
-print(summary(m21.brm), digits = 3)
-# without phylogenetic correlation
-m22.brm <- brm(PT.c  ~ b.D.sc + b.nb.sc + b.dist.sc, family= cumulative,
-               data=niche.drivers2, 
-               control = list(adapt_delta = .95), 
-               chains=4, thin=10, iter=5000, warmup=1000, cores=4)
-print(summary(m22.brm), digits = 3)
-
-# Threats to breeding
-# with phylogenetic correlation
-m23.brm <- brm(TB.c  ~ b.D.sc + b.nb.sc + b.dist.sc +
-                 (1|gr(phylo, cov = A)), family= cumulative,
-               data=niche.drivers2, data2 = list(A = A),
-               control = list(adapt_delta = .97), 
-               chains=4, thin=10, iter=5000, warmup=1000, cores=4)
-print(summary(m23.brm), digits = 3)
-# without phylogenetic correlation
-m24.brm <- brm(TB.c  ~ b.D.sc + b.nb.sc + b.dist.sc, family= cumulative,
-               data=niche.drivers2, 
-               control = list(adapt_delta = .97), 
-               chains=4, thin=10, iter=5000, warmup=1000, cores=4)
-print(summary(m24.brm), digits = 3)
-
-
-# Threats to non-breeding
-# with phylogenetic correlation
-m25.brm <- brm(TN.c  ~ b.D.sc + b.nb.sc + b.dist.sc +
-                 (1|gr(phylo, cov = A)), family= cumulative,
-               data=niche.drivers2, data2 = list(A = A),
-               control = list(adapt_delta = .97), 
-               chains=4, thin=10, iter=5000, warmup=1000, cores=4)
-print(summary(m25.brm), digits = 3)
-# without phylogenetic correlation
-m26.brm <- brm(TN.c  ~ b.D.sc + b.nb.sc + b.dist.sc +
-                 (1|gr(phylo, cov = A)), family= cumulative,
-               data=niche.drivers2, data2 = list(A = A),
-               control = list(adapt_delta = .97), 
-               chains=4, thin=10, iter=5000, warmup=1000, cores=4)
-print(summary(m26.brm), digits = 3)
-
-
-
-
-save(m1.brm, m2.brm, m3.brm, m4.brm, m5.brm, m21.brm, m22.brm, m23.brm, 
-     m24.brm, m25.brm, m26.brm,file="brm_models.RData")
-
-
-
 
 #############################################################################
 #############################################################################
@@ -968,7 +897,7 @@ box(lwd=2)
 
 #----------------------------------------------------------
 
-# Figure 2
+# Figure 3
 
 show_col(hue_pal()(2))
 
@@ -983,7 +912,7 @@ gg.D <- ggplot(niche.drivers)  +
                aes(x = 1984, xend = 2018, y = mean(a.D)+mean(b.D)*1984, yend = mean(a.D)+mean(b.D)*2018), linewidth=2, col="#F8766D") +
   xlim(1980, 2020) +
   ylim(0, 1) +
-  xlab("Period") + ylab("Niche overlap (D)") +
+  xlab("Period") + ylab("Niche overlap (ND)") +
   theme(legend.position = c(0.8, 0.9))
 
 colf <- rep(0,nrow(niche.drivers))
@@ -997,7 +926,7 @@ gg.nb <- ggplot(niche.drivers)  +
                aes(x = 1981, xend = 2018, y = mean(a.nb)+mean(b.nb)*1981, yend = mean(a.nb)+mean(b.nb)*2018), linewidth=2, col="#F8766D") +
   xlim(1980, 2020) +
   ylim(0, 4) +
-  xlab("Period") + ylab("Niche breadth") +
+  xlab("Period") + ylab("Niche breadth (NB)") +
   theme(legend.position="none")
 
 colf <- rep(0,nrow(niche.drivers))
@@ -1011,17 +940,17 @@ gg.dist <- ggplot(niche.drivers)  +
                aes(x = 1984, xend = 2018, y = mean(a.dist)+mean(b.dist)*1984, yend = mean(a.dist)+mean(b.dist)*2018), linewidth=2, col="#F8766D") +
   xlim(1980, 2020) +
   ylim(0, 2) +
-  xlab("Period") + ylab("Niche distance") +
+  xlab("Period") + ylab("Niche position (NP)") +
   theme(legend.position="none")
 
 # Figure
 quartz(height=3.5,width=10)
-ggarrange(gg.D, gg.nb, gg.dist, nrow=1, labels = c('(a)', '(b)', '(c)'))
+ggarrange(gg.D, gg.dist, gg.nb, nrow=1, labels = c('(a)', '(b)', '(c)'))
 
 
 #----------------------------------------------------------
 
-# Figure 3
+# Figure 4
 
 colf <- rep(0,nrow(niche.drivers))
 colf[niche.drivers$p.pc1<0.05] <- "p<0.05"
@@ -1051,19 +980,34 @@ gg.pc2 <- ggplot(niche.drivers)  +
   xlab("Period") + ylab("PC2") +
   theme(legend.position="none")
 
+# colf <- rep(0,nrow(niche.drivers))
+# colf[niche.drivers$p.D<0.05] <- "yes"
+# colf[niche.drivers$p.D>=0.05] <- "no"
+# niche.drivers$significance <- as.factor(colf)
+# gg.pc <- ggplot(niche.drivers)  +
+#   geom_point(aes(x = pc1, y = pc2, color=b.D, size=significance)) +
+#   xlim(-6, 5) +
+#   ylim(-3, 3) +
+#   scale_color_viridis(name="Niche change") +
+#   theme(legend.position = c(0.95,0.5),legend.title = element_text(size = 8), 
+#         legend.text = element_text(size = 8)) #+
+#   #guides(shape = guide_legend(override.aes = list(size = 3))) +
+#   #uides(color = guide_legend(override.aes = list(size = 3)))
+
 gg.d_ec <- ggplot(niche.drivers, aes(x = b.ec, y = b.D))  +
   geom_point() +
   geom_smooth(method=lm, se=TRUE, fullrange=TRUE) +
   geom_vline(xintercept = 0, linetype="dashed") + 
   geom_hline(yintercept = 0, linetype="dashed") +
-  xlab("Env. change in initial distribution") + ylab("Niche change")
+  xlab("Env. change in initial distribution") + ylab("Niche overlap trend (NDt)")
 
 gg.d_gc <- ggplot(niche.drivers, aes(x = b.gc, y = b.D))  +
   geom_point() +
   geom_smooth(method=lm, se=TRUE, fullrange=TRUE) +
   geom_vline(xintercept = 0, linetype="dashed") + 
   geom_hline(yintercept = 0, linetype="dashed") +
-  xlab("Env. change due to geographical change") + ylab("Niche change")
+  xlab("Env. change due to geographical change") + ylab("Niche overlap trend (NDt)")
+
 
 
 
@@ -1075,7 +1019,7 @@ ggarrange(gg.pc1, gg.pc2, gg.d_ec, gg.d_gc, nrow=2,
 
 #----------------------------------------------------------
 
-# Figure 4
+# Figure 5
 
 gg.d_dgeo <- ggplot(niche.drivers, aes(x = b.Dgeo, y = b.D))  +
   geom_point() +
@@ -1084,7 +1028,7 @@ gg.d_dgeo <- ggplot(niche.drivers, aes(x = b.Dgeo, y = b.D))  +
   geom_smooth(data=subset(niche.drivers, p.D<0.05), method=lm, se=FALSE, fullrange=TRUE, col="#F8766D") +
   geom_vline(xintercept = 0, linetype="dashed") + 
   geom_hline(yintercept = 0, linetype="dashed") +
-  xlab("Geographical change") + ylab("Niche change (D trend)") 
+  xlab("Geographical overlap trend (GDt)") + ylab("Niche overlap trend (NDt)") 
 
 gg.nb.occ <- ggplot(niche.drivers)  +
   geom_point(aes(x = b.occ, y = b.nb, col="All data")) +
@@ -1093,7 +1037,7 @@ gg.nb.occ <- ggplot(niche.drivers)  +
   geom_smooth(data=subset(niche.drivers, p.nb<0.05),aes(x = b.occ, y = b.nb, col="p<0.05"), method=lm, se=FALSE, fullrange=TRUE) +
   geom_vline(xintercept = 0, linetype="dashed") + 
   geom_hline(yintercept = 0, linetype="dashed") +
-  xlab("Occupancy change") + ylab("Niche breadth change") +
+  xlab("Geographical breadth trend (GBt)") + ylab("Niche breadth trend (NBt)") +
   scale_color_manual(name = "",
                      values = c("All data" = "black", "p<0.05" = "#F8766D"),
                      labels = c("All data", "p<0.05")) +
@@ -1106,15 +1050,22 @@ gg.bdist.bgdist <- ggplot(niche.drivers, aes(x = b.gdist, y = b.dist))  +
   geom_smooth(data=subset(niche.drivers, p.dist<0.05), method=lm, se=FALSE, fullrange=TRUE, col="#F8766D") +
   geom_vline(xintercept = 0, linetype="dashed") + 
   geom_hline(yintercept = 0, linetype="dashed") +
-  xlab("Geographical distance trend") + ylab("Niche distance tend") 
+  xlab("Geographical position trend (GPt)") + ylab("Niche position trend (NPt)") 
 
 gg.dist.gdist <- ggplot(niche.drivers, aes(x = log(dist.geo), y = dist))  +
   geom_point() +
   geom_point(data=subset(niche.drivers, p.D<0.05), col="#F8766D") +
   geom_smooth(method=lm, se=FALSE, fullrange=TRUE, col="black") +
   geom_smooth(data=subset(niche.drivers, p.D<0.05), method=lm, se=FALSE, fullrange=TRUE, col="#F8766D") +
-  xlab("Net geographical distance (log") + ylab("Net niche distance") 
+  xlab("Net geographical distance (GPnet)") + ylab("Net niche distance (NPnet)") 
 
+# g.dir.gdir <- ggplot(niche.drivers, aes(x = straightness.geo, y = straightness))  +
+#   geom_point() +
+#   geom_point(data=subset(niche.drivers, p.D<0.05), col="#F8766D") +
+#   geom_smooth(method=lm, se=FALSE, fullrange=TRUE, color="black") +
+#   geom_smooth(data=subset(niche.drivers, p.D<0.05), method=lm, se=FALSE, fullrange=TRUE, col="#F8766D") +
+#   xlab("Geographical shift directionality") + ylab("Niche shift directionality") +
+#   theme(legend.position="none")
 
 quartz(height=6,width=7)
 ggarrange(gg.d_dgeo, gg.nb.occ, gg.bdist.bgdist, gg.dist.gdist, nrow=2, 
@@ -1124,7 +1075,7 @@ ggarrange(gg.d_dgeo, gg.nb.occ, gg.bdist.bgdist, gg.dist.gdist, nrow=2,
 
 #----------------------------------------------------------
 
-# Figure 5
+# Figure 6
 load("brm_models.RData")
 
 brm.d <- summary(m1.brm)$fixed[-1,c(1,3,4)]
@@ -1159,103 +1110,56 @@ gg.m.dist <- ggplot(brm.dist, aes(x=Estimate, y=Predictor)) +
   geom_errorbar(aes(xmin=lCI, xmax=uCI), width=.2, position=position_dodge(0.05)) +
   geom_vline(xintercept = 0)
 
-
+# brm.dir <- summary(m5.brm)$fixed[-1,c(1,3,4)]
+# names(brm.dir) <- c("Estimate","lCI","uCI")
+# brm.dir$Predictor <- c("HWI","Mass","Habitat density","Migration","Range size","Min. Latitude","Habitat specialization","Territoriality")
+# gg.m.dir <- ggplot(brm.dir, aes(x=Estimate, y=Predictor)) + 
+#   geom_point()+
+#   geom_errorbar(aes(xmin=lCI, xmax=uCI), width=.2, position=position_dodge(0.05)) +
+#   geom_vline(xintercept = 0)
 
 levels(niche.drivers$fHabitat.Density) <- c("Dense","Semi-open","Open")
 gg.d.hd <- ggplot(niche.drivers) +
   geom_boxplot(aes(x=fHabitat.Density, y=b.D), color="black", fill="lightgrey") +
-  xlab("Habitat density") + ylab("Niche change (D trend)")
+  xlab("Habitat density") + ylab("Overlap trend (NDt)")
 
 gg.d.lat <- ggplot(niche.drivers, aes(x = Min.Latitude, y = b.D))  +
   geom_point() +
   geom_smooth(method=lm, se=TRUE, fullrange=TRUE) +
-  xlab("Minimum latitude") + ylab("Niche change (D trend)")
+  xlab("Minimum latitude") + ylab("Overlap trend (NDt)")
 
 gg.nb.ssi <- ggplot(niche.drivers, aes(x = SSI, y = b.nb))  +
   geom_point() +
   geom_smooth(method=lm, se=TRUE, fullrange=TRUE) +
-  xlab("Habitat specialisation") + ylab("Niche breadth trend")
+  xlab("Habitat specialisation") + ylab("Breadth trend (NBt)")
 
 niche.drivers$fTerritoriality <- factor(niche.drivers$Territoriality)
 levels(niche.drivers$fTerritoriality) <- c("None","Weak","Strong")
 gg.nb.ter <- ggplot(niche.drivers) +
   geom_boxplot(aes(x=fTerritoriality, y=b.nb), color="black", fill="lightgrey") +
-  xlab("Territoriality") + ylab("Niche breadth trend")
+  xlab("Territoriality") + ylab("Breadth trend (NBt")
 
 gg.bdist.hd <- ggplot(niche.drivers) +
   geom_boxplot(aes(x=fHabitat.Density, y=b.dist), color="black", fill="lightgrey") +
-  xlab("Habitat density") + ylab("Niche distance trend")
+  xlab("Habitat density") + ylab("Position trend (NPt)")
 
 gg.dist.hd <- ggplot(niche.drivers) +
   geom_boxplot(aes(x=fHabitat.Density, y=dist), color="black", fill="lightgrey") +
-  xlab("Habitat density") + ylab("Net niche distance")
+  xlab("Habitat density") + ylab("Net distance (NPnet)")
 
 gg.dist.rs <- ggplot(niche.drivers, aes(x = range.size, y = dist))  +
   geom_point() +
   geom_smooth(method=lm, se=TRUE, fullrange=TRUE) +
-  xlab("Range size (log)") + ylab("Net niche distance")
+  xlab("Range size (log)") + ylab("Net distance (NPnet)")
 
 
 # Figure
 quartz(height=9,width=8)
 ggarrange(gg.m.d, gg.d.hd, gg.d.lat, gg.m.nb, gg.nb.ssi, gg.nb.ter,
-          gg.m.bdist, gg.bdist.hd, ggplot() + theme_void(), gg.m.dist,
+          gg.m.bdist, gg.bdist.hd, ggplot(), gg.m.dist,
           gg.dist.hd, gg.dist.rs, nrow=4, 
           labels = c('(a)','(b)','(c)','(d)','(e)','(f)','(g)','(h)','','(i)','(j)','(k)'),
           label.args=list(gp = grid::gpar(font = 4, cex = 1)))
-
-#----------------------------------------------------------
-
-# Figure 6
-
-brm.pt1 <- summary(m21.brm)$fixed[5:7,c(1,3,4)]
-names(brm.pt1) <- c("Estimate_PT.c","lCI","uCI")
-brm.pt1$Predictor <- c("Niche change (D trend)","Niche breadth trend","Niche distance trend")
-brm.pt2 <- summary(m22.brm)$fixed[5:7,c(1,3,4)]
-names(brm.pt2) <- c("Estimate_PT.c","lCI","uCI")
-brm.pt2$Predictor <- c("Niche change (D trend)","Niche breadth trend","Niche distance trend")
-quartz(height=3,width=4)
-ggplot() + 
-  geom_point(data=brm.pt1, aes(x=Estimate_PT.c, y=Predictor))+
-  geom_errorbar(data=brm.pt1, aes(x=Estimate_PT.c, y=Predictor, xmin=lCI, xmax=uCI), width=.2, position=position_dodge(0.05)) +
-  geom_point(data=brm.pt2, aes(x=Estimate_PT.c, y=Predictor), col="#F8766D") +
-  geom_errorbar(data=brm.pt2, aes(x=Estimate_PT.c, y=Predictor, xmin=lCI, xmax=uCI), width=.2, position=position_dodge(0.05), col="#F8766D") +
-  geom_vline(xintercept = 0)
-
-brm.tbc1 <- summary(m23.brm)$fixed[4:6,c(1,3,4)]
-names(brm.tbc1) <- c("Estimate_TB.c","lCI","uCI")
-brm.tbc1$Predictor <- c("Niche change (D trend)","Niche breadth trend","Niche distance trend")
-brm.tbc2 <- summary(m24.brm)$fixed[4:6,c(1,3,4)]
-names(brm.tbc2) <- c("Estimate_TB.c","lCI","uCI")
-brm.tbc2$Predictor <- c("Niche change (D trend)","Niche breadth trend","Niche distance trend")
-quartz(height=3,width=4)
-ggplot() + 
-  geom_point(data=brm.tbc1, aes(x=Estimate_TB.c, y=Predictor))+
-  geom_errorbar(data=brm.tbc1, aes(x=Estimate_TB.c, y=Predictor, xmin=lCI, xmax=uCI), width=.2, position=position_dodge(0.05)) +
-  geom_point(data=brm.tbc2, aes(x=Estimate_TB.c, y=Predictor), col="#F8766D") +
-  geom_errorbar(data=brm.tbc2, aes(x=Estimate_TB.c, y=Predictor, xmin=lCI, xmax=uCI), width=.2, position=position_dodge(0.05), col="#F8766D") +
-  geom_vline(xintercept = 0)
-
-brm.tbn1 <- summary(m25.brm)$fixed[4:6,c(1,3,4)]
-names(brm.tbn1) <- c("Estimate_TN.c","lCI","uCI")
-brm.tbn1$Predictor <- c("Niche change (D trend)","Niche breadth trend","Niche distance trend")
-brm.tbn2 <- summary(m26.brm)$fixed[4:6,c(1,3,4)]
-names(brm.tbn2) <- c("Estimate_TN.c","lCI","uCI")
-brm.tbn2$Predictor <- c("Niche change (D trend)","Niche breadth trend","Niche distance trend")
-quartz(height=3,width=4)
-ggplot() + 
-  geom_point(data=brm.tbn1, aes(x=Estimate_TN.c, y=Predictor))+
-  geom_errorbar(data=brm.tbn1, aes(x=Estimate_TN.c, y=Predictor, xmin=lCI, xmax=uCI), width=.2, position=position_dodge(0.05)) +
-  geom_point(data=brm.tbn2, aes(x=Estimate_TN.c, y=Predictor), col="#F8766D") +
-  geom_errorbar(data=brm.tbn2, aes(x=Estimate_TN.c, y=Predictor, xmin=lCI, xmax=uCI), width=.2, position=position_dodge(0.05), col="#F8766D") +
-  geom_vline(xintercept = 0)
-
-
-
-
-
-
-
 
 
 
